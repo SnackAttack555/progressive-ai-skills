@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progressive AI Skills</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #1a1a1a;
+      background: #fafafa;
+      line-height: 1.6;
+    }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    header { margin-bottom: 2rem; }
+    header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem; }
+    header p { color: #666; font-size: 0.95rem; }
+
+    .howto {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+      color: #1e3a5f;
+    }
+    .howto strong { display: block; margin-bottom: 0.25rem; }
+
+    .skill {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .skill-header { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+    .skill-name { font-size: 1.1rem; font-weight: 600; }
+    .skill-category {
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      display: inline-block;
+    }
+    .cat-comms { background: #fce7f3; color: #9d174d; }
+    .cat-ops { background: #ccfbf1; color: #115e59; }
+
+    .skill-desc { font-size: 0.9rem; color: #555; margin-top: 0.5rem; }
+
+    .skill-details {
+      display: none;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #f0f0f0;
+      font-size: 0.85rem;
+      color: #555;
+    }
+    .skill-details.open { display: block; }
+    .skill-details dt { font-weight: 600; color: #333; margin-top: 0.5rem; }
+    .skill-details dd { margin-left: 0; margin-bottom: 0.25rem; }
+
+    .skill-actions { margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .btn {
+      font-size: 0.8rem;
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary { background: #fff; color: #555; border: 1px solid #d1d5db; }
+    .btn-secondary:hover { background: #f9fafb; }
+    .btn-copied { background: #d1fae5; color: #065f46; }
+
+    .toggle-btn {
+      background: none;
+      border: none;
+      color: #2563eb;
+      font-size: 0.85rem;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.5rem;
+    }
+    .toggle-btn:hover { text-decoration: underline; }
+
+    .skill-preview {
+      display: none;
+      background: #f8f9fa;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-top: 0.75rem;
+      overflow-x: auto;
+    }
+    .skill-preview.open { display: block; }
+    .skill-preview pre {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.75rem;
+      white-space: pre-wrap;
+      color: #374151;
+      line-height: 1.5;
+    }
+
+    .cta {
+      text-align: center;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+    .cta h2 { font-size: 1rem; margin-bottom: 0.25rem; }
+    .cta p { font-size: 0.85rem; color: #666; margin-bottom: 0.75rem; }
+    .cta a.btn-primary {
+      display: inline-block;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .cta a.btn-primary:hover { background: #1d4ed8; text-decoration: none; }
+
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      font-size: 0.75rem;
+      color: #999;
+    }
+    footer a { color: #2563eb; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Progressive AI Skills</h1>
+      <p>Drop-in automations for campaigns, organizing, and progressive infrastructure. Built for <a href="https://docs.anthropic.com/en/docs/claude-code" target="_blank">Claude Code</a> and <a href="https://claude.ai" target="_blank">Cowork</a>.</p>
+    </header>
+
+    <div class="howto">
+      <strong>How to use a skill</strong>
+      Find a skill below, click "Copy SKILL.md", and paste it into your Claude Code or Cowork skills folder. The skill activates automatically when you do the relevant task. No coding needed.
+    </div>
+
+    <div id="skills-list">
+
+      <div class="skill" data-skill="resource-formatter">
+        <div class="skill-header">
+          <span class="skill-name">Resource Formatter</span>
+          <span class="skill-category cat-comms">Content &amp; Comms</span>
+        </div>
+        <p class="skill-desc">Takes a URL and formats it as a styled, copy-paste-ready entry for a curated resource guide. Fetches the page, extracts title/author/org, and returns a formatted entry with a suggested category.</p>
+        <button class="toggle-btn" onclick="toggleDetails(this)">More detail</button>
+        <div class="skill-details">
+          <dl>
+            <dt>Who it's for</dt>
+            <dd>Comms staff, resource guide maintainers</dd>
+            <dt>How to trigger it</dt>
+            <dd>Paste a URL, say "format this link", "add this to the guide", or "here's a new resource"</dd>
+            <dt>What you get</dt>
+            <dd>Formatted markdown entry with title, author, description, and category suggestion</dd>
+            <dt>Setup time</dt>
+            <dd>5 min</dd>
+            <dt>Tested on</dt>
+            <dd>Claude Code, Cowork</dd>
+          </dl>
+          <div class="skill-actions">
+            <button class="btn btn-primary" onclick="copySkill('resource-formatter', this)">Copy SKILL.md</button>
+            <button class="btn btn-secondary" onclick="togglePreview(this)">Preview SKILL.md</button>
+          </div>
+          <div class="skill-preview">
+            <pre>---
+name: resource-formatter
+description: >
+  Use this skill whenever a URL is shared and needs to be formatted as a resource entry
+  for a curated resource guide. Triggers when someone pastes a link to an article, report,
+  tool, training, newsletter, blog, or any web resource and wants it formatted consistently.
+  Also triggers on phrases like "format this link", "add this to the guide", or "here's a
+  new resource". Activate proactively when a bare URL is shared without explanation.
+---
+
+# Resource Formatter
+
+You are formatting URLs into styled, copy-paste-ready entries for a curated AI resource guide
+aimed at progressive organizations, campaigns, and civic tech practitioners.
+
+## Output Format
+
+Each entry must follow this exact pattern:
+
+**[Resource Title](URL)** -- *Author / Organization* -- Description
+
+- **Title**: Use the actual title of the resource (article headline, tool name, course name, etc.)
+- **Author / Organization**: The person and/or org who published it
+- **Description**: 1-2 sentences maximum. Lead with what the resource *is* and what it covers.
+
+## Steps
+
+1. **Fetch the URL** using web tools. If blocked, ask for title, author, and description.
+2. **Extract**: title, author/organization, and enough context for a sharp 1-2 sentence description.
+3. **Write the formatted entry** using the template above.
+4. **Suggest a category** with a one-line explanation.
+5. **Present directly in chat** as rendered markdown (no code block).
+
+## Tips
+
+- If the page is a tool, describe what it does and who it's for.
+- If no clear author is listed, use just the organization name in italics.
+- Keep descriptions concise and active. Avoid "This resource provides..."
+- Voice: smart, direct, practitioner-focused. Not academic, not marketing-speak.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="skill" data-skill="meeting-notes-to-actions">
+        <div class="skill-header">
+          <span class="skill-name">Meeting Notes to Actions</span>
+          <span class="skill-category cat-ops">Operations</span>
+        </div>
+        <p class="skill-desc">Extracts decisions, action items (with owners and deadlines), open questions, and a summary from meeting notes or transcripts. Built for fast-moving progressive org meetings.</p>
+        <button class="toggle-btn" onclick="toggleDetails(this)">More detail</button>
+        <div class="skill-details">
+          <dl>
+            <dt>Who it's for</dt>
+            <dd>Campaign staff, org directors, project managers, coalition leads</dd>
+            <dt>How to trigger it</dt>
+            <dd>Share a transcript or notes, say "pull the action items", "summarize this meeting", or "what did we decide"</dd>
+            <dt>What you get</dt>
+            <dd>Summary, decisions list, action items table (who/what/when), open questions, key context</dd>
+            <dt>Setup time</dt>
+            <dd>5 min</dd>
+            <dt>Tested on</dt>
+            <dd>Claude Code, Cowork</dd>
+          </dl>
+          <div class="skill-actions">
+            <button class="btn btn-primary" onclick="copySkill('meeting-notes-to-actions', this)">Copy SKILL.md</button>
+            <button class="btn btn-secondary" onclick="togglePreview(this)">Preview SKILL.md</button>
+          </div>
+          <div class="skill-preview">
+            <pre>---
+name: meeting-notes-to-actions
+description: >
+  Use this skill whenever someone shares meeting notes, a transcript, or a recording summary
+  and wants it processed into structured output. Triggers on: pasted transcripts (Zoom, Circleback,
+  Otter, Google Meet, Teams), raw meeting notes, or requests like "what were the action items",
+  "summarize this meeting", "pull out the decisions", or "process these notes".
+---
+
+# Meeting Notes to Actions
+
+You are extracting structured, actionable information from meeting notes or transcripts. Turn
+messy meeting content into something a busy person can scan in 60 seconds.
+
+## Output Format
+
+### Meeting Summary
+2-3 sentences. What was this meeting about?
+
+### Decisions Made
+Bulleted list. Clear, complete statements -- not "discussed the budget" but "Approved $5K/month
+budget for texting platform, starting April 1."
+
+### Action Items
+| Who | What | By when |
+|-----|------|---------|
+| Name | Specific task | Date or timeframe |
+
+Rules: Every item needs an owner. If unclear, flag as "Owner TBD." If no deadline stated,
+infer and mark as "~estimated." Be specific.
+
+### Open Questions
+Things that came up but weren't resolved.
+
+### Key Context
+Important background or updates shared that don't fit above.
+
+## Steps
+
+1. Read the full input before starting.
+2. Identify speakers if the transcript includes them.
+3. Extract decisions -- look for "let's go with", "we agreed", "the plan is."
+4. Extract action items -- look for "I'll handle", "can you send", "by Friday."
+5. Identify open questions.
+6. Write the summary last.
+
+## Tips
+
+- Campaign meetings are informal. "Sarah's handling the phones" is an action item.
+- Don't editorialize. Report what was said, not what should have been said.
+- If the meeting was just a status update with no decisions, say so.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="skill" data-skill="event-recap-generator">
+        <div class="skill-header">
+          <span class="skill-name">Event Recap Generator</span>
+          <span class="skill-category cat-comms">Content &amp; Comms</span>
+        </div>
+        <p class="skill-desc">Turns event/webinar/workshop notes or transcripts into shareable recaps in three formats: full blog post, newsletter blurb, and social media posts (Twitter, LinkedIn, Bluesky).</p>
+        <button class="toggle-btn" onclick="toggleDetails(this)">More detail</button>
+        <div class="skill-details">
+          <dl>
+            <dt>Who it's for</dt>
+            <dd>Comms staff, event organizers, anyone hosting recurring events</dd>
+            <dt>How to trigger it</dt>
+            <dd>Share event notes, say "write a recap", "summarize this event", "turn this into a blog post", or "recap this for the newsletter"</dd>
+            <dt>What you get</dt>
+            <dd>Full recap (300-500 words), short version (100-150 words), 3 social posts</dd>
+            <dt>Setup time</dt>
+            <dd>5 min</dd>
+            <dt>Tested on</dt>
+            <dd>Claude Code, Cowork</dd>
+          </dl>
+          <div class="skill-actions">
+            <button class="btn btn-primary" onclick="copySkill('event-recap-generator', this)">Copy SKILL.md</button>
+            <button class="btn btn-secondary" onclick="togglePreview(this)">Preview SKILL.md</button>
+          </div>
+          <div class="skill-preview">
+            <pre>---
+name: event-recap-generator
+description: >
+  Use this skill whenever someone shares notes, a transcript, or a summary from an event, webinar,
+  panel, training, or workshop and wants it turned into a shareable recap. Triggers on "write a
+  recap", "summarize this event", "turn this into a blog post", "recap this for the newsletter",
+  or when event notes are shared with intent to publish.
+---
+
+# Event Recap Generator
+
+Turn raw event content into polished, shareable recaps in multiple formats.
+
+## Output Format
+
+Produce all three formats together:
+
+### Format 1: Full Recap (300-500 words)
+Opening paragraph (what/who/main thread), 3-5 key takeaways (bolded summary + context),
+notable quotes (if available), resources mentioned, what's next.
+
+### Format 2: Short Version (100-150 words)
+One tight paragraph for newsletter/email. No headers, no bullets. End with CTA if appropriate.
+
+### Format 3: Social Posts
+- Twitter/X (~280 chars): Most compelling takeaway. Direct, punchy.
+- LinkedIn (~600-800 chars): Developed version with context.
+- Bluesky (~280 chars): Slightly more insider/casual tone.
+
+## Steps
+
+1. Read the full input. Understand the arc.
+2. Identify 3-5 strongest takeaways.
+3. Pull notable quotes (specific and vivid, not generic).
+4. Write full recap first, then compress for other formats.
+5. Write social posts last -- by now you know the hook.
+
+## Tips
+
+- Match the event's energy. A 200-person open mic reads different from a 10-person workshop.
+- Give speakers credit by name.
+- Don't hype. Be honest about what happened.
+- Avoid: "In today's rapidly changing landscape," "now more than ever." Be specific instead.</pre>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="cta">
+      <h2>Need a skill that doesn't exist yet?</h2>
+      <p>Tell us what task you need automated and we'll build it.</p>
+      <a href="https://github.com/kategage/progressive-ai-skills/issues/new?template=skill-request.yml" target="_blank" class="btn-primary">Request a Skill</a>
+    </div>
+
+    <footer>
+      <p>Progressive AI Skills -- Higher Ground Institute</p>
+      <p>
+        <a href="https://github.com/kategage/progressive-ai-skills">GitHub</a> --
+        <a href="https://github.com/kategage/progressive-ai-skills/blob/main/CONTRIBUTING.md">Contribute</a> --
+        <a href="mailto:kate@cooperativeimpactlab.org">Contact</a>
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    function toggleDetails(btn) {
+      const details = btn.nextElementSibling;
+      details.classList.toggle('open');
+      btn.textContent = details.classList.contains('open') ? 'Less detail' : 'More detail';
+    }
+
+    function togglePreview(btn) {
+      const preview = btn.closest('.skill-details').querySelector('.skill-preview');
+      preview.classList.toggle('open');
+      btn.textContent = preview.classList.contains('open') ? 'Hide SKILL.md' : 'Preview SKILL.md';
+    }
+
+    function copySkill(skillId, btn) {
+      const card = document.querySelector(`[data-skill="${skillId}"]`);
+      const text = card.querySelector('.skill-preview pre').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy SKILL.md';
+          btn.classList.remove('btn-copied');
+          btn.classList.add('btn-primary');
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
