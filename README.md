@@ -22,7 +22,6 @@ Or browse the folders below:
 | [meeting-notes-to-actions](skills/meeting-notes-to-actions/) | Extracts decisions, action items, and follow-ups from meeting notes or transcripts | Operations |
 | [event-recap-generator](skills/event-recap-generator/) | Turns event/webinar notes or transcripts into shareable recaps | Content & Comms |
 | [confess](skills/confess/) | Honest audit of AI output — confidence levels, shortcuts, assumptions, and weakest parts | Meta & Process |
-| [brown-mm](skills/brown-mm/) | Four-pass error audit triggered when you spot a mistake — finds every other error using the Van Halen principle | Meta & Process |
 
 ## How to use a skill
 
