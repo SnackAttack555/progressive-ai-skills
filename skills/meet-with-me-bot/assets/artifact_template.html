@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meeting Follow-ups</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #ffffff;
+      color: #1f2328;
+      font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      max-width: 820px;
+    }
+    header { margin-bottom: 24px; }
+    h1 { font-size: 22px; margin: 0 0 4px; font-weight: 600; }
+    .subtitle { color: #6e7781; font-size: 13px; }
+    .summary {
+      margin: 16px 0;
+      padding: 12px 16px;
+      background: #f6f8fa;
+      border-left: 3px solid #0969da;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .empty {
+      margin: 32px 0;
+      padding: 32px;
+      text-align: center;
+      color: #6e7781;
+      background: #f6f8fa;
+      border-radius: 8px;
+    }
+    .item {
+      border: 1px solid #d0d7de;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      background: #ffffff;
+    }
+    .item.hidden { display: none; }
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .item-name { font-weight: 600; font-size: 16px; }
+    .item-email { color: #6e7781; font-weight: 400; font-size: 14px; }
+    .item-age {
+      font-size: 13px;
+      color: #6e7781;
+      white-space: nowrap;
+      text-align: right;
+    }
+    .item-age .age-primary { display: block; }
+    .item-age .age-secondary {
+      display: block;
+      font-size: 12px;
+      color: #6e7781;
+      font-weight: 400;
+      margin-top: 2px;
+    }
+    .item-age.urgent .age-primary { color: #b35900; font-weight: 600; }
+    .item-age.stale .age-primary { color: #cf222e; font-weight: 600; }
+    .meta {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #6e7781;
+    }
+    .scheduler-line {
+      margin-top: 4px;
+      color: #1f2328;
+      font-size: 13px;
+    }
+    .scheduler-line strong { font-weight: 600; }
+    .meta a {
+      color: #0969da;
+      text-decoration: none;
+    }
+    .meta a:hover { text-decoration: underline; }
+    .label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6e7781;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin: 14px 0 4px;
+    }
+    .quote {
+      padding: 10px 12px;
+      background: #f6f8fa;
+      border-left: 3px solid #d0d7de;
+      border-radius: 0 4px 4px 0;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .quote.original { border-left-color: #8250df; }
+    .quote.followup { border-left-color: #1a7f37; }
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    button {
+      font: inherit;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #d0d7de;
+      background: #f6f8fa;
+      color: #1f2328;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    button:hover { background: #eaeef2; }
+    button.copy.copied { background: #dcffe4; border-color: #1a7f37; color: #1a7f37; }
+    button.snooze:hover { background: #ffebe9; border-color: #cf222e; color: #cf222e; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1f2328;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .toast.show { opacity: 0.95; }
+    .footer {
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid #d0d7de;
+      font-size: 12px;
+      color: #6e7781;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Meeting Follow-ups</h1>
+    <div class="subtitle" id="subtitle">Last scanned: <span id="scan-date"></span></div>
+  </header>
+
+  <div id="root"></div>
+
+  <div class="footer">
+    Snoozed entries auto-expire 60 days after the original request. If you re-email the same person later, that new request will be surfaced fresh.
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Data injected by the skill at render time.
+    const DATA = __DATA_PLACEHOLDER__;
+    const SCAN_TIMESTAMP = "__SCAN_TIMESTAMP_PLACEHOLDER__";
+    const SNOOZE_FILE_PATH = "/Users/you/Documents/meet-with-me-bot/snooze.json";
+
+    // localStorage key for client-side hides — scoped to this scan, so a fresh
+    // scan starts clean. The file-based snooze is the durable record; this
+    // just gives the user immediate visual feedback between scans.
+    const HIDES_KEY = "meeting-followups-hidden-" + SCAN_TIMESTAMP;
+
+    function getHides() {
+      try { return JSON.parse(localStorage.getItem(HIDES_KEY) || "[]"); }
+      catch (e) { return []; }
+    }
+    function addHide(threadId) {
+      const set = new Set(getHides());
+      set.add(threadId);
+      localStorage.setItem(HIDES_KEY, JSON.stringify([...set]));
+    }
+    // Best-effort cleanup of hides from prior scans.
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith("meeting-followups-hidden-") && k !== HIDES_KEY) {
+        try { localStorage.removeItem(k); } catch (e) {}
+      }
+    }
+
+    function showToast(msg, ms) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), ms || 2000);
+    }
+
+    function ageClass(days) {
+      if (days >= 21) return "stale";
+      if (days >= 14) return "urgent";
+      return "";
+    }
+
+    function escapeHtml(s) {
+      if (s == null) return "";
+      return String(s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    function daysBetween(isoDate, todayIso) {
+      // Both YYYY-MM-DD; integer day diff. Returns null if unparseable.
+      if (!isoDate || !todayIso) return null;
+      const a = new Date(isoDate + "T00:00:00Z");
+      const b = new Date(todayIso + "T00:00:00Z");
+      if (isNaN(a) || isNaN(b)) return null;
+      return Math.round((b - a) / 86400000);
+    }
+
+    function lastOutreachLabel(lastActionDate, todayIso) {
+      const d = daysBetween(lastActionDate, todayIso);
+      if (d == null) return null;
+      if (d <= 0) return "outreach today";
+      if (d === 1) return "1 day since last outreach";
+      return d + " days since last outreach";
+    }
+
+    function renderItem(item) {
+      const ageCls = ageClass(item.age_days);
+      const ageLabel = item.age_days === 1 ? "1 day waiting" : item.age_days + " days waiting";
+      const lastSender = item.last_activity && item.last_activity.sender ? item.last_activity.sender : "—";
+      const lastDate = item.last_activity && item.last_activity.date ? item.last_activity.date : "—";
+      const todayIso = SCAN_TIMESTAMP.slice(0, 10);
+      const outreachLabel = lastOutreachLabel(item.last_action_date, todayIso);
+      // Suppress secondary line if last action == original request (no nudges, would be redundant).
+      const showSecondary = outreachLabel && item.last_action_date && item.last_action_date !== item.original_request_date;
+
+      // Header line: principal name <principal email> (optional: scheduling via Scheduler Name <scheduler email>)
+      const principalName = item.principal_name || item.principal_email;
+      const headerName = `<span class="item-name">${escapeHtml(principalName)}</span>` +
+        (item.principal_name ? ` <span class="item-email">&lt;${escapeHtml(item.principal_email)}&gt;</span>` : "");
+      const schedulerLine = (item.scheduler_email)
+        ? `<div class="meta scheduler-line">Scheduling via <strong>${escapeHtml(item.scheduler_name || item.scheduler_email)}</strong>` +
+          (item.scheduler_name ? ` &lt;${escapeHtml(item.scheduler_email)}&gt;` : "") + `</div>`
+        : "";
+
+      return `
+        <div class="item" data-thread-id="${escapeHtml(item.thread_id)}">
+          <div class="item-header">
+            <div>${headerName}</div>
+            <div class="item-age ${ageCls}">
+              <span class="age-primary">${escapeHtml(ageLabel)}</span>
+              ${showSecondary ? `<span class="age-secondary">${escapeHtml(outreachLabel)}</span>` : ""}
+            </div>
+          </div>
+          ${schedulerLine}
+          <div class="meta">
+            Requested ${escapeHtml(item.original_request_date)} ·
+            Last activity: ${escapeHtml(lastDate)} (${escapeHtml(lastSender)}) ·
+            <a href="${escapeHtml(item.thread_url)}" target="_blank" rel="noopener">View thread →</a>
+          </div>
+
+          ${item.original_sentence ? `
+            <span class="label">Your most recent ask</span>
+            <div class="quote original">${escapeHtml(item.original_sentence)}</div>
+          ` : ""}
+
+          <span class="label">Paste-ready follow-up</span>
+          <div class="quote followup" id="followup-${escapeHtml(item.thread_id)}">${escapeHtml(item.followup_note)}</div>
+
+          <div class="actions">
+            <button class="copy" data-thread-id="${escapeHtml(item.thread_id)}">Copy follow-up</button>
+            <button class="snooze"
+                    data-thread-id="${escapeHtml(item.thread_id)}"
+                    data-principal-email="${escapeHtml(item.principal_email)}"
+                    data-request-date="${escapeHtml(item.original_request_date)}">Don't follow up</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      const root = document.getElementById("root");
+      document.getElementById("scan-date").textContent = SCAN_TIMESTAMP;
+
+      const hides = new Set(getHides());
+      const visible = DATA.filter(d => !hides.has(d.thread_id));
+
+      if (DATA.length === 0) {
+        root.innerHTML = `<div class="empty"><strong>Inbox zero on follow-ups.</strong><br>Nothing pending right now.</div>`;
+        return;
+      }
+      if (visible.length === 0) {
+        root.innerHTML = `<div class="empty"><strong>All caught up for now.</strong><br>You've snoozed all ${DATA.length} pending request${DATA.length === 1 ? "" : "s"} in this snapshot.</div>`;
+        return;
+      }
+
+      // Sort: oldest first.
+      visible.sort((a, b) => b.age_days - a.age_days);
+
+      const oldest = visible[0];
+      const summaryText = `${visible.length} outstanding request${visible.length === 1 ? "" : "s"}. ` +
+        (visible.length > 0 ? `Oldest: ${oldest.name || oldest.email} (${oldest.age_days} day${oldest.age_days === 1 ? "" : "s"}).` : "");
+
+      root.innerHTML = `
+        <div class="summary">${escapeHtml(summaryText)}</div>
+        ${visible.map(renderItem).join("")}
+      `;
+
+      // Wire up handlers.
+      root.querySelectorAll("button.copy").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.threadId;
+          const text = document.getElementById("followup-" + id).textContent;
+          try {
+            await navigator.clipboard.writeText(text);
+            btn.textContent = "Copied";
+            btn.classList.add("copied");
+            setTimeout(() => {
+              btn.textContent = "Copy follow-up";
+              btn.classList.remove("copied");
+            }, 1500);
+          } catch (e) {
+            showToast("Couldn't copy — your browser blocked clipboard access.");
+          }
+        });
+      });
+
+      root.querySelectorAll("button.snooze").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.threadId;
+          const email = btn.dataset.principalEmail;
+          const requestDate = btn.dataset.requestDate;
+
+          btn.disabled = true;
+          btn.textContent = "Snoozing...";
+
+          try {
+            // Inline Python keeps the artifact self-contained — no external script path
+            // to discover across sandboxes. Reads the JSON, dedups by (email, request_date),
+            // appends if new, writes back.
+            const py = [
+              "import json,os,sys",
+              "from datetime import date as D",
+              "p=sys.argv[1]",
+              "os.makedirs(os.path.dirname(p),exist_ok=True)",
+              "d={'snoozed':[]}",
+              "if os.path.exists(p):",
+              "    try: d=json.load(open(p))",
+              "    except: pass",
+              "if not isinstance(d,dict) or 'snoozed' not in d: d={'snoozed':[]}",
+              "e,r,t=sys.argv[2],sys.argv[3],sys.argv[4]",
+              "keys={(x.get('email','').lower().strip(),x.get('request_date','')) for x in d['snoozed']}",
+              "if (e.lower().strip(),r) not in keys:",
+              "    d['snoozed'].append({'email':e,'request_date':r,'thread_id':t,'snoozed_at':D.today().isoformat()})",
+              "    json.dump(d,open(p,'w'),indent=2,sort_keys=True)",
+              "    print('added')",
+              "else:",
+              "    print('already-snoozed')",
+            ].join("\n");
+            const cmd = `python3 -c ${shellQuote(py)} ${shellQuote(SNOOZE_FILE_PATH)} ${shellQuote(email)} ${shellQuote(requestDate)} ${shellQuote(id)}`;
+            await window.cowork.callMcpTool("mcp__workspace__bash", { command: cmd });
+            addHide(id);
+            const itemEl = document.querySelector(`.item[data-thread-id="${cssEscape(id)}"]`);
+            if (itemEl) itemEl.classList.add("hidden");
+            showToast("Snoozed for 60 days. They won't show up in the next scan.");
+            // Re-render the summary count.
+            const remaining = DATA.filter(d => !new Set(getHides()).has(d.thread_id));
+            if (remaining.length === 0) render();
+          } catch (e) {
+            btn.disabled = false;
+            btn.textContent = "Don't follow up";
+            console.error("Snooze failed:", e);
+            showToast("Couldn't save snooze — see console for details.");
+          }
+        });
+      });
+    }
+
+    function shellQuote(s) {
+      // Single-quote with internal single-quote escape.
+      return "'" + String(s).replace(/'/g, "'\\''") + "'";
+    }
+    function cssEscape(s) {
+      return String(s).replace(/[^a-zA-Z0-9_-]/g, "\\$&");
+    }
+
+    render();
+  </script>
+</body>
+</html>
